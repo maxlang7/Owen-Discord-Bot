@@ -4,9 +4,14 @@ import random
 import discord
 from dotenv import load_dotenv
 from discord import Status
+
+
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
+DELETE_DELAY = os.getenv('DELETE_DELAY')
+
+
 
 client = discord.Client()
 f = open(r'greetings.txt')
@@ -39,6 +44,8 @@ async def on_member_update(member_before, member_after):
     if member_before.status == Status.offline and member_after.status == Status.online:
         greeting = random.choice(greetings).rstrip()
         channel = discord.utils.get(client.get_all_channels(), guild__name="maxlang's server", name='general')
-        await channel.send(f'{greeting}, {member_after.name} welcome back to {guild.name}')
-#TO DO wait 30 secs and then delete message
+        message = await channel.send(f'{greeting}, {member_after.name} welcome back to {guild.name}')
+        await message.delete(delay=DELETE_DELAY)
+
+
 client.run(TOKEN)
