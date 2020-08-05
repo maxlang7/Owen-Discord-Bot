@@ -3,10 +3,11 @@ import os
 import random
 import discord
 import time
-import datetime
+from datetime import datetime, date, timedelta
 from dotenv import load_dotenv
 from discord import Status
 import pytz
+
 
 
 load_dotenv()
@@ -16,8 +17,8 @@ DELETE_DELAY = int(os.getenv('DELETE_DELAY'))
 
 client = discord.Client()
 
-client.last_splash_post = datetime.date.today() - datetime.timedelta(days=1)
-
+client.last_splash_post = date.today() - timedelta(days=1)
+client.last_holiday_post = date.today() - timedelta(days=1)
 eastern = pytz.timezone('US/Eastern')
 
 f = open(r'greetings.txt')
@@ -58,14 +59,14 @@ async def on_member_update(member_before, member_after):
     splash_channel = discord.utils.get(client.get_all_channels(), guild__name="maxlang's server", name='minecraftsplashes')
     await daily_splash(client, splash_channel)
     await greet_user(client, channel, member_before, member_after, guild)
-
+    await check_holidays(client, channel)
 
 async def daily_splash(client, channel):
-    if client.last_splash_post < datetime.date.today() and datetime.datetime.now(tz=eastern).hour > 5:
+    if client.last_splash_post < date.today() and datetime.now(tz=eastern).hour > 5:
             splash = random.choice(splashes).rstrip()
             message = await channel.send(splash)
             await message.delete(delay=24*60*60)
-            client.last_splash_post = datetime.date.today()
+            client.last_splash_post = date.today()
 
 
 async def greet_user(client, channel, member_before, member_after, guild):
@@ -75,4 +76,11 @@ async def greet_user(client, channel, member_before, member_after, guild):
         await message.delete(delay=DELETE_DELAY)
         print(client.last_splash_post)
 
+async def check_holidays(client, channel):
+    for holiday in holidays:
+        holidate, saying, user = holiday.split(',')
+        holidate = datetime.strptime(holidate, '%Y-%m-%d').date()
+        if date.today() == holidate and client.last_holiday_post < date.today():
+            await channel.send(f'{saying} {user}')
+            client.last_holiday_post = date.today()
 client.run(TOKEN)
