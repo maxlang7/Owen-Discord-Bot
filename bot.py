@@ -74,10 +74,9 @@ async def on_message(self, message):
 
 async def daily_splash(client, channel):
     if client.last_splash_post < date.today() and datetime.now(tz=eastern).hour > 5:
-            splash = random.choice(splashes).rstrip()
-            message = await channel.send(splash)
-            await message.delete(delay=24*60*60)
-            client.last_splash_post = date.today()
+        splash = random.choice(splashes).rstrip()
+        message = await channel.send(splash)
+        client.last_splash_post = date.today()
 
 
 async def greet_user(client, channel, member_before, member_after, guild):
