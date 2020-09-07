@@ -19,6 +19,7 @@ client = discord.Client()
 
 client.last_splash_post = date.today() - timedelta(days=1)
 client.last_holiday_post = date.today() - timedelta(days=1)
+client.rude_members = []
 eastern = pytz.timezone('US/Eastern')
 
 f = open(r'greetings.txt')
@@ -61,6 +62,16 @@ async def on_member_update(member_before, member_after):
     await greet_user(client, channel, member_before, member_after, guild)
     await check_holidays(client, channel)
 
+
+@client.event
+async def on_message(self, message):
+        if message.author == self.user:
+            return
+
+        if message.content==('!ignoreme'):
+            await message.channel.send('Are you so unkind as to not want me to greet you!? How RUDE! Must I do it....')
+            client.rude_members.append(self.user)
+
 async def daily_splash(client, channel):
     if client.last_splash_post < date.today() and datetime.now(tz=eastern).hour > 5:
             splash = random.choice(splashes).rstrip()
@@ -71,10 +82,13 @@ async def daily_splash(client, channel):
 
 async def greet_user(client, channel, member_before, member_after, guild):
    if member_before.status == Status.offline and member_after.status == Status.online:
-        greeting = random.choice(greetings).rstrip()
-        message = await channel.send(f'{greeting}, {member_after.name} welcome back to {guild.name}')
-        await message.delete(delay=DELETE_DELAY)
-        print(client.last_splash_post)
+        if member_after not in client.rude_members:
+            greeting = random.choice(greetings).rstrip()
+            message = await channel.send(f'{greeting}, {member_after.name} welcome back to {guild.name}')
+            await message.delete(delay=DELETE_DELAY)
+
+
+
 
 async def check_holidays(client, channel):
     for holiday in holidays:
