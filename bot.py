@@ -65,12 +65,12 @@ async def on_member_update(member_before, member_after):
 
 @client.event
 async def on_message(self, message):
-        if message.author == self.user:
-            return
+    if message.author == self.user:
+        return
+    if message.content.startswith('!ignoreme'):
+        await message.channel.send('Are you so unkind as to not want me to greet you!? How RUDE! Must I do it....')
+        client.rude_members.append(self.user)
 
-        if message.content==('!ignoreme'):
-            await message.channel.send('Are you so unkind as to not want me to greet you!? How RUDE! Must I do it....')
-            client.rude_members.append(self.user)
 
 async def daily_splash(client, channel):
     if client.last_splash_post < date.today() and datetime.now(tz=eastern).hour > 5:
